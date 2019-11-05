@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vuex@3.1.1/dist/vuex.js"></script>
+
+</head>
+
+<body>
+
+    <div id="app">
+        <numero></numero>
+    </div>
+
+
+    <script>
+
+        Vue.component('numero', {
+            template:
+                `
+            <div>
+                <h1>numero {{numero}}</h1>
+                <hijo></hijo>
+            </div>
+            `,
+            computed: {
+                ...Vuex.mapState(['numero', 'cursos'])
+            }
+        });
+
+        Vue.component('hijo', {
+            template:
+                `
+            <div>               
+                <button class="btn btn-success"  @click="aumentar">+</button>
+                <button class="btn btn-success"  @click="disminuir(2)">-</button>
+                <button class="btn btn-success"  @click="obtenerCursos">Obtener Cursos</button>
+                <h1>numero {{numero}}</h1>
+                <ul v-for="item of cursos">
+                    <li>{{item.nombre}}</li>
+                </ul>                
+            </div>
+            `,
+            // Atreves de las propiedades computadas obtenemos los valores definidas en el state
+            computed: {
+                ...Vuex.mapState(['numero', 'cursos'])
+            },
+            // A treves de los metodos podemos acceder tanto a las map mutation como a las map action
+            methods: {
+                ...Vuex.mapMutations(['aumentar', 'disminuir']),
+                ...Vuex.mapActions(['obtenerCursos'])
+            },
+            // Utilizamos el ciclo de vida de Vue para disparar la accion defininida 
+            beforeCreate() {
+                // con dispatch podemos ejecutar las actions definidas
+                store.dispatch('obtenerCursos')
+                console.log('running the action obtenerCursos in beforeCreate()')
+            }
+        });
+
+        // Declaramos la nueva instacia de VUEX, esta siempre antes de crear la nueva instacia de Vue
+        const store = new Vuex.Store({
+            state: {
+                numero: 10,
+                cursos: []
+            },
+            // Las mutaciones modifican el estado de las propiedades definidas en el state
+            mutations: {
+                aumentar(state) {
+                    state.numero++;
+                },
+                disminuir(state, n) {
+                    state.numero -= n;
+                },
+                llenarCursos(state, cursosAccion) {
+                    state.cursos = cursosAccion;
+                }
+            },
+            actions: {
+                // Las acciones deben hacer commit a las mutaciones que a sus ves estas modifican el estate de la aplicacion
+                obtenerCursos: async function ({ commit }) {
+                    const data = await fetch('cursos.json');
+                    const cursos = await data.json();
+                    // Hacemos commit a la mutacion encargada de llenar los cursos 
+                    commit('llenarCursos', cursos);
+                }
+            }
+        });
+
+        // nueva instacia de vue
+        new Vue({
+            el: '#app',
+            store: store
+        })
+    </script>
+</body>
+
+</html>

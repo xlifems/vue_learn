@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vuex@3.1.1/dist/vuex.js"></script>
+
+</head>
+
+<body>
+
+    <div id="app">
+        <numero></numero>
+    </div>
+
+    <script>
+
+        Vue.component('numero', {
+            template:
+                `
+            <div>
+                <h1>numero {{numero}}</h1>
+                <hijo></hijo>
+            </div>
+            `,
+            // primera forma de simplificar la utilizacion de los atributos del store es utilizando 
+            // las propiedades computadas y en una de ellas retornal el valor deseado 
+            computed: {
+                numero() {
+                    // el signo $ para el store solo es necesario para el html
+                    return store.state.numero
+                }
+            }
+        });
+
+        Vue.component('hijo', {
+            template:
+                `
+            <div>               
+                <button class="btn btn-success"  @click="$store.commit('aumentar')">+</button>
+                <h1>numero {{numero}}</h1>
+            </div>
+            `
+            ,
+            // Segunda forma de simplificar la utilizacion de los atributos del store es utilizando 
+            // las propiedades computadas y el  mapState pero este devuelve un objeto y las propiedades computadas tambien
+            computed: {
+                // Para ello es necesario hacer un Mix de todo los objetos que devuelve mapState en forma de item para la propiedad computada utilizando ...
+                // mix this into the outer object with the object spread operator
+                ...Vuex.mapState(['numero','numero2'])
+            }
+        });
+
+        // Declaramos la nueva instacia de VUEX, esta siempre antes de crear la nueva instacia de Vue
+        const store = new Vuex.Store({
+            state: {
+                numero: 10,
+                numero2: 5
+            },
+            mutations: {
+                aumentar(state) {
+                    state.numero++
+                }
+            }
+        });
+
+        // nueva instacia de vue
+        new Vue({
+            el: '#app',
+            store: store
+        })
+    </script>
+</body>
+
+</html>
